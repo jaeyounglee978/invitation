@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>결혼합니다 — 이준호 &amp; 서다인</title>
+
+<!-- 카카오톡 공유 썸네일용. 배포 도메인으로 바꿔주세요 -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="이준호 · 서다인 결혼합니다" />
+<meta property="og:description" content="2027년 5월 8일 토요일 낮 12시" />
+<meta property="og:image" content="https://example.github.io/wedding/assets/cover.jpg" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+:root{
+  --paper:#E7E1D3;        /* 봉투 본체 */
+  --paper-fold:#DDD5C3;   /* 접힌 면 */
+  --paper-flap:#D5CCB8;   /* 덮개 */
+  --celadon:#8CA79A;
+  --celadon-deep:#6B8A7C;
+  --hanji:#FAF8F3;
+  --ink:#1C2622;
+  --ink-soft:#5E6B64;
+  --seal:#9E2F27;
+  --line:rgba(28,38,34,.14);
+
+  --display:'Gowun Batang', serif;
+  --body:'IBM Plex Sans KR', system-ui, -apple-system, sans-serif;
+
+  --stage-h:240vh;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--hanji);color:var(--ink);
+  font-family:var(--body);font-weight:300;line-height:1.85;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+
+/* ---------- 1. 봉투 열림 무대 ---------- */
+.stage{position:relative;height:var(--stage-h);}
+.stage-sticky{
+  position:sticky;top:0;
+  height:100vh;height:100dvh;
+  overflow:hidden;
+}
+
+/* 속지 — 봉투가 들리면 드러나는 편지 */
+.letter{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 28px;text-align:center;
+  background:radial-gradient(120% 90% at 50% 8%,#FFFFFF 0%,var(--hanji) 62%,#F1EDE4 100%);
+  opacity:var(--reveal,0);
+  transform:translateY(calc((1 - var(--reveal,0)) * 14px));
+  will-change:transform,opacity;
+}
+.letter .eyebrow{
+  font-size:.72rem;letter-spacing:.42em;text-indent:.42em;
+  color:var(--celadon-deep);font-weight:500;margin-bottom:34px;
+}
+.letter .names{
+  font-family:var(--display);
+  font-size:clamp(2.3rem,10vw,3.4rem);
+  line-height:1.35;letter-spacing:.06em;margin:0;
+}
+.letter .names span{display:block;}
+.letter .amp{
+  display:block;font-size:.9rem;letter-spacing:.3em;
+  color:var(--celadon-deep);margin:14px 0;font-family:var(--body);
+}
+.letter .when{margin-top:36px;font-size:.92rem;letter-spacing:.06em;color:var(--ink-soft);}
+.letter .rule{width:1px;height:52px;background:var(--line);margin:30px auto 0;}
+
+/* 봉투 — 위로 그대로 들어올려집니다 (translateY만 사용) */
+.cover{
+  position:absolute;inset:0;
+  transform:translate3d(0,calc(var(--p,0) * -100%),0);
+  will-change:transform;
+  background:var(--paper);
+  /* 준비하신 봉투 이미지가 있으면 아래 한 줄을 살리고 .env-panels 블록을 지우세요 */
+  /* background:var(--paper) url('assets/cover.jpg') center/cover no-repeat; */
+  box-shadow:0 calc(var(--p,0) * 40px) calc(var(--p,0) * 54px) rgba(20,30,26,calc(var(--p,0) * .3));
+}
+
+/* 편지봉투 뒷면 — 좌·우·아래 접힘면과 위 덮개가 가운데에서 만납니다 */
+.env-panels span{position:absolute;inset:0;display:block;}
+.env-l{background:linear-gradient(100deg,var(--paper-fold),var(--paper));
+       clip-path:polygon(0 0,50% 50%,0 100%);}
+.env-r{background:linear-gradient(260deg,var(--paper-fold),var(--paper));
+       clip-path:polygon(100% 0,50% 50%,100% 100%);}
+.env-b{background:linear-gradient(0deg,var(--paper-fold),var(--paper));
+       clip-path:polygon(0 100%,50% 50%,100% 100%);}
+.env-f{background:linear-gradient(180deg,var(--paper-flap),var(--paper-fold));
+       clip-path:polygon(0 0,100% 0,50% 50%);
+       filter:drop-shadow(0 2px 3px rgba(28,38,34,.16));}
+/* 접힘선 */
+.env-crease{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(to bottom right,transparent calc(50% - .5px),rgba(28,38,34,.10) 50%,transparent calc(50% + .5px)),
+    linear-gradient(to bottom left, transparent calc(50% - .5px),rgba(28,38,34,.10) 50%,transparent calc(50% + .5px));
+}
+/* 종이결 */
+.cover::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 1px,transparent 1px 3px);
+  mix-blend-mode:overlay;
+}
+
+/* 봉함인 — 덮개 끝, 화면 정중앙에서 반으로 갈라집니다 */
+.seal{
+  position:absolute;left:50%;top:50%;
+  width:76px;height:76px;margin:-38px 0 0 -38px;
+  opacity:calc(1 - var(--p,0) * 2.6);
+}
+.seal-half{position:absolute;inset:0;}
+.seal-half .disc{
+  position:absolute;inset:0;border-radius:50%;
+  background:var(--seal);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:1.6rem;color:#F6EEE9;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 2px 6px rgba(60,20,16,.3);
+}
+.seal-half.l{clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--p,0) * -72px)) rotate(calc(var(--p,0) * -18deg));}
+.seal-half.r{clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--p,0) *  72px)) rotate(calc(var(--p,0) *  18deg));}
+
+/* 봉투 앞면에 손으로 쓴 듯한 문구 */
+.cover-inner{
+  position:absolute;left:0;right:0;top:72%;
+  text-align:center;color:var(--ink-soft);
+}
+.cover-inner .kicker{
+  margin:0;font-size:.64rem;letter-spacing:.5em;text-indent:.5em;opacity:.7;
+}
+.cover-inner h1{
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(1.6rem,6.5vw,2.1rem);letter-spacing:.22em;text-indent:.22em;
+  margin:14px 0 0;color:var(--ink);
+}
+
+.hint{
+  position:absolute;left:0;right:0;bottom:30px;
+  text-align:center;color:var(--ink-soft);
+  font-size:.66rem;letter-spacing:.34em;text-indent:.34em;
+  opacity:calc(1 - var(--p,0) * 4);
+}
+.hint i{display:block;width:1px;height:24px;background:currentColor;margin:12px auto 0;opacity:.5;
+  animation:drip 2.2s ease-in-out infinite;}
+@keyframes drip{0%,100%{transform:scaleY(.4);opacity:.25;}50%{transform:scaleY(1);opacity:.6;}}
+
+/* ---------- 2. 본문 ---------- */
+main{position:relative;z-index:2;background:var(--hanji);}
+section{padding:96px 26px;max-width:520px;margin:0 auto;text-align:center;}
+section + section{border-top:1px solid var(--line);}
+.label{
+  font-size:.68rem;letter-spacing:.42em;text-indent:.42em;
+  color:var(--celadon-deep);font-weight:500;margin-bottom:34px;
+}
+.greeting{font-size:.98rem;color:var(--ink-soft);line-height:2.3;}
+.greeting strong{font-weight:400;color:var(--ink);}
+.parents{margin-top:42px;font-size:.9rem;color:var(--ink-soft);line-height:2.2;}
+.parents b{font-weight:400;color:var(--ink);}
+
+/* 갤러리 미리보기 */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.gallery span{
+  display:block;aspect-ratio:3/4;background:#E4DFD4 center/cover no-repeat;
+  border:1px solid var(--line);
+}
+.album-link{
+  display:inline-block;margin-top:26px;padding:15px 34px;
+  border:1px solid var(--celadon-deep);color:var(--celadon-deep);
+  text-decoration:none;font-size:.85rem;letter-spacing:.12em;
+  transition:background .25s ease,color .25s ease;
+}
+.album-link:hover,.album-link:focus-visible{background:var(--celadon-deep);color:#fff;}
+.album-note{margin-top:14px;font-size:.78rem;color:var(--ink-soft);}
+
+/* 연락처 */
+.people{display:grid;gap:14px;}
+.person{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px 18px;border:1px solid var(--line);background:#fff;
+}
+.person .who{text-align:left;}
+.person .role{font-size:.68rem;letter-spacing:.24em;color:var(--celadon-deep);}
+.person .nm{font-family:var(--display);font-size:1.12rem;}
+.person .acts{display:flex;gap:8px;}
+.icon-btn{
+  width:42px;height:42px;border:1px solid var(--line);border-radius:50%;
+  background:transparent;color:var(--ink-soft);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;cursor:pointer;text-decoration:none;
+  transition:background .25s ease,color .25s ease,border-color .25s ease;
+}
+.icon-btn:hover,.icon-btn:focus-visible{background:var(--celadon-deep);color:#fff;border-color:var(--celadon-deep);}
+
+/* 예식 안내 */
+.when-big{font-family:var(--display);font-size:1.6rem;letter-spacing:.04em;margin:0;}
+.when-sub{margin-top:10px;font-size:.88rem;color:var(--ink-soft);letter-spacing:.04em;}
+.venue{margin-top:34px;font-size:1.02rem;}
+.venue small{display:block;margin-top:8px;font-size:.85rem;color:var(--ink-soft);}
+
+/* 약도 */
+.map-still{
+  margin:0 0 22px;width:100%;aspect-ratio:4/3;border:1px solid var(--line);
+  background:#E9E5DC center/cover no-repeat;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-soft);font-size:.8rem;letter-spacing:.1em;
+}
+.deeplinks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.dl{
+  padding:15px 10px;border:1px solid var(--line);background:#fff;color:var(--ink);
+  text-decoration:none;font-size:.85rem;letter-spacing:.03em;cursor:pointer;font-family:var(--body);
+  transition:border-color .25s ease,color .25s ease;
+}
+.dl:hover,.dl:focus-visible{border-color:var(--celadon-deep);color:var(--celadon-deep);}
+.dl.primary{background:var(--celadon-deep);border-color:var(--celadon-deep);color:#fff;grid-column:1/-1;}
+.dl.primary:hover{color:#fff;opacity:.9;}
+.transit{margin-top:30px;text-align:left;font-size:.86rem;color:var(--ink-soft);line-height:2;}
+.transit dt{font-weight:500;color:var(--ink);letter-spacing:.14em;font-size:.7rem;margin-top:16px;}
+.transit dd{margin:2px 0 0;}
+
+footer{padding:70px 26px 90px;text-align:center;border-top:1px solid var(--line);}
+footer .mark{font-family:var(--display);font-size:1.05rem;letter-spacing:.2em;}
+footer .thanks{margin-top:14px;font-size:.78rem;color:var(--ink-soft);letter-spacing:.06em;}
+footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:var(--celadon-deep);}
+
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);
+  background:var(--ink);color:#fff;padding:11px 20px;
+  font-size:.8rem;letter-spacing:.04em;opacity:0;pointer-events:none;
+  transition:opacity .3s ease,transform .3s ease;z-index:50;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* 스크롤 페이드인 */
+.reveal{
+  opacity:0;filter:blur(9px);transform:translateY(20px);
+  transition:opacity .95s ease,filter .95s ease,transform .95s cubic-bezier(.2,.7,.2,1);
+  transition-delay:var(--d,0s);
+}
+.reveal.in{opacity:1;filter:blur(0);transform:none;}
+
+@media (prefers-reduced-motion:reduce){
+  .reveal{transition-duration:.01ms;}
+  .cover{transform:none;opacity:calc(1 - var(--p,0) * 1.6);}
+  .hint i{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="stage-sticky" id="sticky">
+
+    <div class="letter">
+      <p class="eyebrow">INVITATION</p>
+      <h2 class="names">
+        <span>이준호</span>
+        <span class="amp">그리고</span>
+        <span>서다인</span>
+      </h2>
+      <p class="when">2027년 5월 8일 토요일 낮 12시</p>
+      <div class="rule"></div>
+    </div>
+
+    <div class="cover">
+      <!-- 실제 봉투 이미지로 교체할 때는 이 .env-panels 블록만 지우세요 -->
+      <div class="env-panels">
+        <span class="env-l"></span>
+        <span class="env-r"></span>
+        <span class="env-b"></span>
+        <span class="env-f"></span>
+        <span class="env-crease"></span>
+      </div>
+
+      <div class="seal">
+        <div class="seal-half l"><div class="disc">囍</div></div>
+        <div class="seal-half r"><div class="disc">囍</div></div>
+      </div>
+
+      <div class="cover-inner">
+        <p class="kicker">WE ARE GETTING MARRIED</p>
+        <h1>청첩장</h1>
+      </div>
+
+      <p class="hint">스크롤하여 열어보세요<i></i></p>
+    </div>
+
+  </div>
+</div>
+
+<main>
+
+  <section>
+    <p class="label reveal">인사말</p>
+    <p class="greeting reveal" style="--d:.08s">
+      함께 걸어온 계절이 쌓여<br />
+      이제 같은 곳을 바라보게 되었습니다.<br /><br />
+      <strong>서로의 하루가 되기로 약속하는 날</strong>,<br />
+      귀한 걸음으로 축복해 주시면<br />
+      더없는 기쁨으로 간직하겠습니다.
+    </p>
+    <p class="parents reveal" style="--d:.16s">
+      이성재 · 문혜숙 의 <b>장남 준호</b><br />
+      서동현 · 한미정 의 <b>차녀 다인</b>
+    </p>
+  </section>
+
+  <section>
+    <p class="label reveal">사진첩</p>
+    <div class="gallery reveal" style="--d:.06s">
+      <span style="background-image:url('assets/thumb-1.jpg')"></span>
+      <span style="background-image:url('assets/thumb-2.jpg')"></span>
+      <span style="background-image:url('assets/thumb-3.jpg')"></span>
+    </div>
+    <a class="album-link reveal" style="--d:.14s" href="album/">웨딩 앨범 전체 보기</a>
+    <p class="album-note reveal" style="--d:.2s">40여 장의 사진을 담았습니다</p>
+  </section>
+
+  <section>
+    <p class="label reveal">연락하기</p>
+    <div class="people reveal" style="--d:.08s" id="people"></div>
+  </section>
+
+  <section>
+    <p class="label reveal">예식 안내</p>
+    <p class="when-big reveal" style="--d:.06s">2027. 05. 08</p>
+    <p class="when-sub reveal" style="--d:.12s">토요일 낮 12시</p>
+    <p class="venue reveal" style="--d:.18s" id="venue"></p>
+  </section>
+
+  <section>
+    <p class="label reveal">오시는 길</p>
+    <div class="map-still reveal" style="--d:.06s">약도 이미지 자리 (assets/map.jpg)</div>
+    <div class="deeplinks reveal" style="--d:.12s">
+      <a class="dl primary" id="dl-naver" href="#" target="_blank" rel="noopener">네이버 지도로 길찾기</a>
+      <a class="dl" id="dl-kakao" href="#" target="_blank" rel="noopener">카카오맵</a>
+      <a class="dl" id="dl-google" href="#" target="_blank" rel="noopener">구글 지도</a>
+      <button class="dl" id="copy-addr" style="grid-column:1/-1">주소 복사하기</button>
+    </div>
+    <dl class="transit reveal" style="--d:.18s">
+      <dt>지하철</dt>
+      <dd>○○선 ○○역 3번 출구에서 도보 5분</dd>
+      <dt>주차</dt>
+      <dd>건물 지하 2~4층, 2시간 무료 (예식장에서 확인 도장)</dd>
+    </dl>
+  </section>
+
+  <footer>
+    <p class="mark reveal">囍</p>
+    <p class="thanks reveal" style="--d:.1s">찾아와 주셔서 감사합니다</p>
+    <a class="foot-album reveal" style="--d:.16s" href="album/">웨딩 앨범 보기 →</a>
+  </footer>
+</main>
+
+<div class="toast" id="toast">주소를 복사했습니다</div>
+
+<script>
+/* ====== 여기만 바꾸시면 됩니다 ====== */
+const CONFIG = {
+  groom: { role:'신랑', name:'이준호', tel:'01000000000' },
+  bride: { role:'신부', name:'서다인', tel:'01000000000' },
+  venue: {
+    name: '○○컨벤션 3층 그랜드홀',
+    address: '서울특별시 ○○구 ○○대로 000',
+    lat: null,   // 카카오맵 길찾기를 쓰려면 좌표를 넣어주세요 (없으면 주소 검색으로 대체)
+    lng: null
+  },
+  naverShortUrl: 'https://naver.me/Fso7PdKh'
+};
+/* ================================== */
+
+/* --- 봉투 열림: 스크롤 진행률을 CSS 변수로 --- */
+const stage = document.getElementById('stage');
+const sticky = document.getElementById('sticky');
+let ticking = false;
+
+function updateProgress(){
+  const track = stage.offsetHeight - window.innerHeight;
+  const p = Math.min(1, Math.max(0, -stage.getBoundingClientRect().top / track));
+  sticky.style.setProperty('--p', p.toFixed(4));
+  const r = Math.min(1, Math.max(0, (p - 0.18) / 0.55));
+  sticky.style.setProperty('--reveal', r.toFixed(4));
+  ticking = false;
+}
+function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(updateProgress); } }
+window.addEventListener('scroll', onScroll, {passive:true});
+window.addEventListener('resize', updateProgress);
+updateProgress();
+
+/* --- 블러 페이드인 --- */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, {threshold:0.15, rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* --- 연락처 카드 --- */
+document.getElementById('people').innerHTML = [CONFIG.groom, CONFIG.bride].map(p=>`
+  <div class="person">
+    <div class="who">
+      <div class="role">${p.role}</div>
+      <div class="nm">${p.name}</div>
+    </div>
+    <div class="acts">
+      <a class="icon-btn" href="tel:${p.tel}" aria-label="${p.name}에게 전화">전화</a>
+      <a class="icon-btn" href="sms:${p.tel}" aria-label="${p.name}에게 문자">문자</a>
+    </div>
+  </div>`).join('');
+
+/* --- 예식장 --- */
+document.getElementById('venue').innerHTML =
+  `${CONFIG.venue.name}<small>${CONFIG.venue.address}</small>`;
+
+/* --- 지도 딥링크 --- */
+const v = CONFIG.venue;
+const addr = encodeURIComponent(v.address);
+const nm = encodeURIComponent(v.name);
+document.getElementById('dl-naver').href = CONFIG.naverShortUrl;
+document.getElementById('dl-kakao').href = (v.lat && v.lng)
+  ? `https://map.kakao.com/link/to/${nm},${v.lat},${v.lng}`
+  : `https://map.kakao.com/link/search/${addr}`;
+document.getElementById('dl-google').href =
+  `https://www.google.com/maps/search/?api=1&query=${addr}`;
+
+/* --- 주소 복사 (카카오 인앱 브라우저 대비 폴백 포함) --- */
+const toast = document.getElementById('toast');
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 1800);
+}
+document.getElementById('copy-addr').addEventListener('click', async ()=>{
+  const text = `${v.name} (${v.address})`;
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('주소를 복사했습니다');
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); showToast('주소를 복사했습니다'); }
+    catch(_){ showToast('복사에 실패했습니다. 길게 눌러 복사해 주세요'); }
+    document.body.removeChild(ta);
+  }
+});
+</script>
+</body>
+</html>
