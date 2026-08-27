@@ -51,12 +51,34 @@ header p{margin:12px 0 0;font-size:.84rem;color:var(--ink-soft);letter-spacing:.
   display:none;align-items:center;justify-content:center;
 }
 .viewer.open{display:flex;}
-.viewer img{max-width:92vw;max-height:82vh;object-fit:contain;}
+
+/* 저화질을 먼저 깔고, 고화질이 도착하면 그 위로 겹쳐 보여줍니다 */
+.stage-img{position:relative;line-height:0;}
+.stage-img img{max-width:92vw;max-height:82vh;max-height:82dvh;object-fit:contain;display:block;}
+.stage-img .low{filter:blur(12px);transform:scale(1.02);}
+.stage-img .high{
+  position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;
+  opacity:0;transition:opacity .45s ease;
+}
+.stage-img .high.ready{opacity:1;}
+.stage-img .spinner{
+  position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;
+  border:1px solid rgba(255,255,255,.28);border-top-color:rgba(255,255,255,.8);
+  border-radius:50%;opacity:0;transition:opacity .2s ease;pointer-events:none;
+  animation:spin .9s linear infinite;
+}
+.stage-img.loading .spinner{opacity:1;}
+@keyframes spin{to{transform:rotate(360deg);}}
 .viewer .nav{
   position:absolute;top:0;bottom:0;width:34%;border:0;background:transparent;
   cursor:pointer;color:transparent;font-size:0;
 }
 .viewer .prev{left:0;} .viewer .next{right:0;}
+@media (max-width:600px){
+  .viewer .nav{width:22%;}
+  .viewer .close{top:max(14px,env(safe-area-inset-top));right:14px;}
+  .viewer .count{bottom:max(20px,env(safe-area-inset-bottom));}
+}
 .viewer .close{
   position:absolute;top:18px;right:18px;width:44px;height:44px;
   border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;
@@ -66,7 +88,11 @@ header p{margin:12px 0 0;font-size:.84rem;color:var(--ink-soft);letter-spacing:.
   position:absolute;bottom:26px;left:0;right:0;text-align:center;
   color:rgba(255,255,255,.7);font-size:.76rem;letter-spacing:.16em;
 }
-@media (prefers-reduced-motion:reduce){ .grid button{transition-duration:.01ms;} }
+@media (prefers-reduced-motion:reduce){
+  .grid button{transition-duration:.01ms;}
+  .stage-img .high{transition-duration:.01ms;}
+  .stage-img .spinner{animation:none;}
+}
 </style>
 </head>
 <body>
@@ -83,23 +109,40 @@ header p{margin:12px 0 0;font-size:.84rem;color:var(--ink-soft);letter-spacing:.
 
 <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
   <button class="nav prev" id="prev">이전</button>
-  <img id="viewer-img" alt="" />
+  <div class="stage-img" id="stage-img">
+    <img class="low" id="viewer-low" alt="" aria-hidden="true" />
+    <img class="high" id="viewer-high" alt="" />
+    <span class="spinner" aria-hidden="true"></span>
+  </div>
   <button class="nav next" id="next">다음</button>
   <button class="close" id="close" aria-label="닫기">닫기</button>
   <p class="count" id="count"></p>
 </div>
 
 <script>
-/* 사진 파일명만 채우면 됩니다. wide:true 는 가로로 넓게 배치 */
-const PHOTOS = Array.from({length:12}, (_,i)=>({
-  src: `../assets/album/${String(i+1).padStart(2,'0')}.jpg`,
-  wide: i % 5 === 2
-}));
+/* ====== 여기만 바꾸시면 됩니다 ======
+   같은 파일명을 두 디렉터리에 넣어주세요.
+     ../assets/album/low/01.jpg   ← 목록용 저화질
+     ../assets/album/high/01.jpg  ← 클릭하면 보이는 고화질
+   wide:true 는 가로로 넓게 배치됩니다. */
+const ALBUM = {
+  count: 12,
+  lowDir:  '../assets/album/low',
+  highDir: '../assets/album/high',
+  ext: 'jpg',
+  wide: i => i % 5 === 2
+};
+/* ================================== */
+
+const PHOTOS = Array.from({length:ALBUM.count}, (_,i)=>{
+  const file = `${String(i+1).padStart(2,'0')}.${ALBUM.ext}`;
+  return { low:`${ALBUM.lowDir}/${file}`, high:`${ALBUM.highDir}/${file}`, wide:ALBUM.wide(i) };
+});
 
 const grid = document.getElementById('grid');
 grid.innerHTML = PHOTOS.map((p,i)=>
   `<button class="${p.wide?'wide':''}" data-i="${i}"
-     style="background-image:url('${p.src}')" aria-label="사진 ${i+1} 크게 보기"></button>`
+     style="background-image:url('${p.low}')" aria-label="사진 ${i+1} 크게 보기"></button>`
 ).join('');
 
 /* 블러 페이드인 */
@@ -116,21 +159,71 @@ grid.querySelectorAll('button').forEach(b=>io.observe(b));
 
 /* 확대 보기 */
 const viewer = document.getElementById('viewer');
-const vimg = document.getElementById('viewer-img');
+const stageImg = document.getElementById('stage-img');
+const vlow = document.getElementById('viewer-low');
+const vhigh = document.getElementById('viewer-high');
 const count = document.getElementById('count');
 let idx = 0;
+let loadToken = 0;   /* 빠르게 넘길 때 늦게 도착한 이미지가 덮어쓰지 않도록 */
+
+/* 이미 받아둔 고화질은 다시 기다리지 않습니다 */
+const highCache = new Set();
+
+/* 셀룰러·데이터 절약 모드에서는 미리 받지 않습니다 */
+function mayPrefetch(){
+  const c = navigator.connection;
+  if(!c) return true;
+  if(c.saveData) return false;
+  return !['slow-2g','2g','3g'].includes(c.effectiveType);
+}
+
+function preloadHigh(i){
+  if(!mayPrefetch()) return;
+  const p = PHOTOS[(i + PHOTOS.length) % PHOTOS.length];
+  if(highCache.has(p.high)) return;
+  const img = new Image();
+  img.onload = ()=>highCache.add(p.high);
+  img.src = p.high;
+}
 
 function open(i){
   idx = (i + PHOTOS.length) % PHOTOS.length;
-  vimg.src = PHOTOS[idx].src;
-  vimg.alt = `웨딩 사진 ${idx+1}`;
+  const p = PHOTOS[idx];
+  const token = ++loadToken;
+
+  /* 1. 목록에 쓰던 저화질을 먼저 띄웁니다 (대개 캐시에 있어 즉시 보입니다) */
+  vlow.src = p.low;
+  vlow.alt = '';
+  vhigh.classList.remove('ready');
+  vhigh.removeAttribute('src');
+  vhigh.alt = `웨딩 사진 ${idx+1}`;
   count.textContent = `${idx+1} / ${PHOTOS.length}`;
   viewer.classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  /* 2. 고화질을 받아 도착하면 위로 겹칩니다 */
+  if(!highCache.has(p.high)) stageImg.classList.add('loading');
+  const hi = new Image();
+  hi.onload = ()=>{
+    highCache.add(p.high);
+    if(token !== loadToken) return;
+    vhigh.src = p.high;
+    vhigh.classList.add('ready');
+    stageImg.classList.remove('loading');
+    preloadHigh(idx + 1);
+    preloadHigh(idx - 1);
+  };
+  hi.onerror = ()=>{
+    if(token !== loadToken) return;
+    stageImg.classList.remove('loading');   /* 고화질이 없으면 저화질 그대로 둡니다 */
+  };
+  hi.src = p.high;
 }
 function close(){
   viewer.classList.remove('open');
   document.body.style.overflow = '';
+  loadToken++;                       /* 받는 중이던 고화질은 버립니다 */
+  if(location.hash) history.replaceState(null, '', location.pathname);
 }
 grid.addEventListener('click', e=>{
   const b = e.target.closest('button[data-i]');
@@ -139,20 +232,31 @@ grid.addEventListener('click', e=>{
 document.getElementById('prev').addEventListener('click', ()=>open(idx-1));
 document.getElementById('next').addEventListener('click', ()=>open(idx+1));
 document.getElementById('close').addEventListener('click', close);
+viewer.addEventListener('click', e=>{ if(e.target === viewer) close(); });
 document.addEventListener('keydown', e=>{
   if(!viewer.classList.contains('open')) return;
   if(e.key === 'Escape') close();
   if(e.key === 'ArrowLeft') open(idx-1);
   if(e.key === 'ArrowRight') open(idx+1);
 });
+/* 청첩장 미리보기에서 #p3 처럼 들어오면 그 사진을 바로 엽니다 */
+const jump = /^#p(\d+)$/.exec(location.hash);
+if(jump){
+  const n = Number(jump[1]);
+  if(n >= 1 && n <= PHOTOS.length) open(n - 1);
+}
+
 /* 좌우 스와이프 */
-let x0 = null;
-viewer.addEventListener('touchstart', e=>{ x0 = e.touches[0].clientX; }, {passive:true});
+let x0 = null, y0 = null;
+viewer.addEventListener('touchstart', e=>{
+  x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+}, {passive:true});
 viewer.addEventListener('touchend', e=>{
   if(x0 === null) return;
   const dx = e.changedTouches[0].clientX - x0;
-  if(Math.abs(dx) > 50) open(idx + (dx < 0 ? 1 : -1));
-  x0 = null;
+  const dy = e.changedTouches[0].clientY - y0;
+  if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) open(idx + (dx < 0 ? 1 : -1));
+  x0 = y0 = null;
 }, {passive:true});
 </script>
 </body>

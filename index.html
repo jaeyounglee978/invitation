@@ -168,10 +168,12 @@ section + section{border-top:1px solid var(--line);}
 
 /* 갤러리 미리보기 */
 .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-.gallery span{
+.gallery a{
   display:block;aspect-ratio:3/4;background:#E4DFD4 center/cover no-repeat;
   border:1px solid var(--line);
+  -webkit-tap-highlight-color:transparent;
 }
+.gallery a:focus-visible{outline:2px solid var(--celadon-deep);outline-offset:2px;}
 .album-link{
   display:inline-block;margin-top:26px;padding:15px 34px;
   border:1px solid var(--celadon-deep);color:var(--celadon-deep);
@@ -226,6 +228,47 @@ section + section{border-top:1px solid var(--line);}
 .transit dt{font-weight:500;color:var(--ink);letter-spacing:.14em;font-size:.7rem;margin-top:16px;}
 .transit dd{margin:2px 0 0;}
 
+/* 참석 여부 */
+.rsvp-msg{font-size:.92rem;color:var(--ink-soft);line-height:2.1;margin:0 0 30px;}
+.rsvp-btn{
+  display:block;width:100%;padding:18px 20px;
+  background:var(--celadon-deep);border:1px solid var(--celadon-deep);color:#fff;
+  text-decoration:none;font-family:var(--body);font-size:.92rem;letter-spacing:.1em;
+  cursor:pointer;transition:opacity .25s ease;
+}
+.rsvp-btn:hover,.rsvp-btn:focus-visible{opacity:.88;}
+.rsvp-note{margin-top:14px;font-size:.78rem;color:var(--ink-soft);}
+
+/* 마음 전하실 곳 — 아코디언 */
+.accordion{border:1px solid var(--line);background:#fff;text-align:left;}
+.accordion + .accordion{margin-top:10px;}
+.accordion > summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:17px 20px;font-size:.88rem;letter-spacing:.12em;color:var(--ink);
+}
+.accordion > summary::-webkit-details-marker{display:none;}
+.accordion > summary .chev{
+  width:9px;height:9px;border-right:1px solid var(--ink-soft);border-bottom:1px solid var(--ink-soft);
+  transform:rotate(45deg) translate(-2px,-2px);transition:transform .25s ease;flex:none;
+}
+.accordion[open] > summary .chev{transform:rotate(225deg) translate(-2px,-2px);}
+.acc-body{border-top:1px solid var(--line);padding:6px 20px 18px;animation:accIn .35s ease;}
+@keyframes accIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+.acct{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:15px 0;border-bottom:1px solid var(--line);
+}
+.acct:last-child{border-bottom:0;}
+.acct .who{font-size:.74rem;letter-spacing:.2em;color:var(--celadon-deep);}
+.acct .no{margin-top:5px;font-size:.9rem;color:var(--ink);letter-spacing:.02em;}
+.acct .copy{
+  flex:none;padding:9px 14px;border:1px solid var(--line);background:transparent;
+  color:var(--ink-soft);font-family:var(--body);font-size:.74rem;letter-spacing:.06em;cursor:pointer;
+  transition:background .25s ease,color .25s ease,border-color .25s ease;
+}
+.acct .copy:hover,.acct .copy:focus-visible{background:var(--celadon-deep);color:#fff;border-color:var(--celadon-deep);}
+
 footer{padding:70px 26px 90px;text-align:center;border-top:1px solid var(--line);}
 footer .mark{font-family:var(--display);font-size:1.05rem;letter-spacing:.2em;}
 footer .thanks{margin-top:14px;font-size:.78rem;color:var(--ink-soft);letter-spacing:.06em;}
@@ -251,6 +294,7 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
   .reveal{transition-duration:.01ms;}
   .cover{transform:none;opacity:calc(1 - var(--p,0) * 1.6);}
   .hint i{animation:none;}
+  .acc-body{animation:none;}
 }
 </style>
 </head>
@@ -315,10 +359,11 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
 
   <section>
     <p class="label reveal">사진첩</p>
+    <!-- 미리보기는 저화질(low), 누르면 앨범에서 고화질(high)로 열립니다 -->
     <div class="gallery reveal" style="--d:.06s">
-      <span style="background-image:url('assets/thumb-1.jpg')"></span>
-      <span style="background-image:url('assets/thumb-2.jpg')"></span>
-      <span style="background-image:url('assets/thumb-3.jpg')"></span>
+      <a href="album/#p1" style="background-image:url('assets/album/low/01.jpg')" aria-label="사진 1 크게 보기"></a>
+      <a href="album/#p2" style="background-image:url('assets/album/low/02.jpg')" aria-label="사진 2 크게 보기"></a>
+      <a href="album/#p3" style="background-image:url('assets/album/low/03.jpg')" aria-label="사진 3 크게 보기"></a>
     </div>
     <a class="album-link reveal" style="--d:.14s" href="album/">웨딩 앨범 전체 보기</a>
     <p class="album-note reveal" style="--d:.2s">40여 장의 사진을 담았습니다</p>
@@ -353,6 +398,22 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
     </dl>
   </section>
 
+  <section>
+    <p class="label reveal">참석 여부</p>
+    <p class="rsvp-msg reveal" style="--d:.06s">
+      찾아와 주시는 한 분 한 분 귀하게 모시고자<br />
+      참석 여부를 여쭙습니다.<br />
+      잠시 시간 내어 전해 주시면 감사하겠습니다.
+    </p>
+    <a class="rsvp-btn reveal" style="--d:.12s" id="rsvp-link" href="#" target="_blank" rel="noopener">참석 여부 전하기</a>
+    <p class="rsvp-note reveal" style="--d:.18s">구글 설문지로 연결됩니다</p>
+  </section>
+
+  <section>
+    <p class="label reveal">마음 전하실 곳</p>
+    <div class="reveal" style="--d:.08s" id="accounts"></div>
+  </section>
+
   <footer>
     <p class="mark reveal">囍</p>
     <p class="thanks reveal" style="--d:.1s">찾아와 주셔서 감사합니다</p>
@@ -373,7 +434,24 @@ const CONFIG = {
     lat: null,   // 카카오맵 길찾기를 쓰려면 좌표를 넣어주세요 (없으면 주소 검색으로 대체)
     lng: null
   },
-  naverShortUrl: 'https://naver.me/Fso7PdKh'
+  naverShortUrl: 'https://naver.me/Fso7PdKh',
+
+  // 참석 여부 — 구글 설문지 주소를 넣어주세요 (예: https://forms.gle/xxxxxxxx)
+  rsvpUrl: '',
+
+  // 마음 전하실 곳 — 필요 없는 줄은 지우시면 됩니다
+  accounts: [
+    { side:'신랑측', list:[
+      { who:'신랑 이준호', bank:'○○은행', no:'000-0000-0000-00' },
+      { who:'아버지 이성재', bank:'○○은행', no:'000-0000-0000-00' },
+      { who:'어머니 문혜숙', bank:'○○은행', no:'000-0000-0000-00' }
+    ]},
+    { side:'신부측', list:[
+      { who:'신부 서다인', bank:'○○은행', no:'000-0000-0000-00' },
+      { who:'아버지 서동현', bank:'○○은행', no:'000-0000-0000-00' },
+      { who:'어머니 한미정', bank:'○○은행', no:'000-0000-0000-00' }
+    ]}
+  ]
 };
 /* ================================== */
 
@@ -438,19 +516,58 @@ function showToast(msg){
   toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'), 1800);
 }
-document.getElementById('copy-addr').addEventListener('click', async ()=>{
-  const text = `${v.name} (${v.address})`;
+async function copyText(text, okMsg){
   try{
     await navigator.clipboard.writeText(text);
-    showToast('주소를 복사했습니다');
+    showToast(okMsg);
   }catch(e){
     const ta = document.createElement('textarea');
     ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
     document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); showToast('주소를 복사했습니다'); }
+    try{ document.execCommand('copy'); showToast(okMsg); }
     catch(_){ showToast('복사에 실패했습니다. 길게 눌러 복사해 주세요'); }
     document.body.removeChild(ta);
   }
+}
+document.getElementById('copy-addr').addEventListener('click', ()=>{
+  copyText(`${v.name} (${v.address})`, '주소를 복사했습니다');
+});
+
+/* --- 참석 여부 (구글 설문지) --- */
+const rsvp = document.getElementById('rsvp-link');
+if(CONFIG.rsvpUrl){
+  rsvp.href = CONFIG.rsvpUrl;
+}else{
+  rsvp.removeAttribute('href');
+  rsvp.removeAttribute('target');
+  rsvp.style.opacity = '.45';
+  rsvp.style.cursor = 'default';
+  rsvp.addEventListener('click', e=>{
+    e.preventDefault();
+    showToast('설문지 주소가 아직 등록되지 않았습니다');
+  });
+}
+
+/* --- 마음 전하실 곳 (기본 닫힘) --- */
+document.getElementById('accounts').innerHTML = CONFIG.accounts.map(g=>`
+  <details class="accordion">
+    <summary>${g.side} 마음 전하실 곳<i class="chev"></i></summary>
+    <div class="acc-body">
+      ${g.list.map(a=>`
+        <div class="acct">
+          <div class="who-wrap">
+            <div class="who">${a.who}</div>
+            <div class="no">${a.bank} ${a.no}</div>
+          </div>
+          <button class="copy" type="button" data-copy="${a.bank} ${a.no}" aria-label="${a.who} 계좌번호 복사">복사</button>
+        </div>`).join('')}
+    </div>
+  </details>`).join('');
+
+document.getElementById('accounts').addEventListener('click', e=>{
+  const btn = e.target.closest('.copy');
+  if(!btn) return;
+  copyText(btn.dataset.copy, '계좌번호를 복사했습니다');
 });
 </script>
 </body>
