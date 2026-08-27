@@ -8,7 +8,7 @@
 <!-- 카카오톡 공유 썸네일용. 배포 도메인으로 바꿔주세요 -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="이준호 · 서다인 결혼합니다" />
-<meta property="og:description" content="2027년 5월 8일 토요일 낮 12시" />
+<meta property="og:description" content="2027년 1월 9일 토요일 오후 3시 30분" />
 <meta property="og:image" content="https://example.github.io/wedding/assets/cover.jpg" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -210,10 +210,8 @@ section + section{border-top:1px solid var(--line);}
 
 /* 약도 */
 .map-still{
-  margin:0 0 22px;width:100%;aspect-ratio:4/3;border:1px solid var(--line);
-  background:#E9E5DC center/cover no-repeat;
-  display:flex;align-items:center;justify-content:center;
-  color:var(--ink-soft);font-size:.8rem;letter-spacing:.1em;
+  display:block;margin:0 0 22px;width:100%;height:auto;
+  border:1px solid var(--line);background:#E9E5DC;
 }
 .deeplinks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 .dl{
@@ -310,7 +308,7 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
         <span class="amp">그리고</span>
         <span>서다인</span>
       </h2>
-      <p class="when">2027년 5월 8일 토요일 낮 12시</p>
+      <p class="when">2027년 1월 9일 토요일 오후 3시 30분</p>
       <div class="rule"></div>
     </div>
 
@@ -376,25 +374,24 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
 
   <section>
     <p class="label reveal">예식 안내</p>
-    <p class="when-big reveal" style="--d:.06s">2027. 05. 08</p>
-    <p class="when-sub reveal" style="--d:.12s">토요일 낮 12시</p>
+    <p class="when-big reveal" style="--d:.06s">2027. 01. 09</p>
+    <p class="when-sub reveal" style="--d:.12s">토요일 오후 3시 30분</p>
     <p class="venue reveal" style="--d:.18s" id="venue"></p>
   </section>
 
   <section>
     <p class="label reveal">오시는 길</p>
-    <div class="map-still reveal" style="--d:.06s">약도 이미지 자리 (assets/map.jpg)</div>
+    <img class="map-still reveal" style="--d:.06s" src="assets/map.jpg"
+         width="1200" height="947" alt="더메리든 약도 — 분당선 서현역 5번 출구 인근" />
     <div class="deeplinks reveal" style="--d:.12s">
       <a class="dl primary" id="dl-naver" href="#" target="_blank" rel="noopener">네이버 지도로 길찾기</a>
-      <a class="dl" id="dl-kakao" href="#" target="_blank" rel="noopener">카카오맵</a>
-      <a class="dl" id="dl-google" href="#" target="_blank" rel="noopener">구글 지도</a>
       <button class="dl" id="copy-addr" style="grid-column:1/-1">주소 복사하기</button>
     </div>
     <dl class="transit reveal" style="--d:.18s">
       <dt>지하철</dt>
-      <dd>○○선 ○○역 3번 출구에서 도보 5분</dd>
+      <dd>분당선 서현역 5번 출구에서 도보 5분</dd>
       <dt>주차</dt>
-      <dd>건물 지하 2~4층, 2시간 무료 (예식장에서 확인 도장)</dd>
+      <dd>주차 가능 (무료)</dd>
     </dl>
   </section>
 
@@ -429,12 +426,11 @@ const CONFIG = {
   groom: { role:'신랑', name:'이준호', tel:'01000000000' },
   bride: { role:'신부', name:'서다인', tel:'01000000000' },
   venue: {
-    name: '○○컨벤션 3층 그랜드홀',
-    address: '서울특별시 ○○구 ○○대로 000',
-    lat: null,   // 카카오맵 길찾기를 쓰려면 좌표를 넣어주세요 (없으면 주소 검색으로 대체)
-    lng: null
+    name: '더메리든 8층 메리든 홀',
+    address: '경기 성남시 분당구 서현로180번길 19 비전월드 8층'
   },
-  naverShortUrl: 'https://naver.me/Fso7PdKh',
+  // 네이버 지도 공유 단축링크가 있으면 넣어주세요. 비워두면 주소로 검색합니다
+  naverShortUrl: '',
 
   // 참석 여부 — 구글 설문지 주소를 넣어주세요 (예: https://forms.gle/xxxxxxxx)
   rsvpUrl: 'https://forms.gle/pSBtnvLjRofc6wXy7',
@@ -500,14 +496,8 @@ document.getElementById('venue').innerHTML =
 
 /* --- 지도 딥링크 --- */
 const v = CONFIG.venue;
-const addr = encodeURIComponent(v.address);
-const nm = encodeURIComponent(v.name);
-document.getElementById('dl-naver').href = CONFIG.naverShortUrl;
-document.getElementById('dl-kakao').href = (v.lat && v.lng)
-  ? `https://map.kakao.com/link/to/${nm},${v.lat},${v.lng}`
-  : `https://map.kakao.com/link/search/${addr}`;
-document.getElementById('dl-google').href =
-  `https://www.google.com/maps/search/?api=1&query=${addr}`;
+document.getElementById('dl-naver').href = CONFIG.naverShortUrl
+  || `https://map.naver.com/p/search/${encodeURIComponent(v.address)}`;
 
 /* --- 주소 복사 (카카오 인앱 브라우저 대비 폴백 포함) --- */
 const toast = document.getElementById('toast');
@@ -530,7 +520,7 @@ async function copyText(text, okMsg){
   }
 }
 document.getElementById('copy-addr').addEventListener('click', ()=>{
-  copyText(`${v.name} (${v.address})`, '주소를 복사했습니다');
+  copyText(v.address, '주소를 복사했습니다');
 });
 
 /* --- 참석 여부 (구글 설문지) --- */
