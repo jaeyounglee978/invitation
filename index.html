@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>결혼합니다 — 이준호 &amp; 서다인</title>
 
-<!-- 카카오톡 공유 썸네일용. 배포 도메인으로 바꿔주세요 -->
+<!-- 카카오톡 공유 썸네일용 -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="이준호 · 서다인 결혼합니다" />
 <meta property="og:description" content="2027년 1월 9일 토요일 오후 3시 30분" />
-<meta property="og:image" content="https://example.github.io/wedding/assets/cover.jpg" />
+<meta property="og:image" content="https://yuri-s2-jaeyoung.aru.rest/assets/cover.jpg" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,9 +17,7 @@
 
 <style>
 :root{
-  --paper:#E7E1D3;        /* 봉투 본체 */
-  --paper-fold:#DDD5C3;   /* 접힌 면 */
-  --paper-flap:#D5CCB8;   /* 덮개 */
+  --card:#F4F5F3;         /* 표지 카드 바탕 */
   --celadon:#8CA79A;
   --celadon-deep:#6B8A7C;
   --hanji:#FAF8F3;
@@ -76,43 +74,32 @@ body{
 .letter .when{margin-top:36px;font-size:.92rem;letter-spacing:.06em;color:var(--ink-soft);}
 .letter .rule{width:1px;height:52px;background:var(--line);margin:30px auto 0;}
 
-/* 봉투 — 위로 그대로 들어올려집니다 (translateY만 사용) */
+/* 표지 — 위쪽 모서리를 경첩 삼아 뒤로 젖혀지며 열립니다 (X축 회전)
+   편지와 3D 맥락을 분리해 두어야 회전 중 겹침 정렬이 흔들리지 않습니다 */
+.cover-wrap{
+  position:absolute;inset:0;
+  perspective:1500px;perspective-origin:50% 38%;
+}
 .cover{
   position:absolute;inset:0;
-  transform:translate3d(0,calc(var(--p,0) * -100%),0);
+  transform-origin:50% 0%;
+  transform:rotateX(calc(var(--p,0) * -104deg));
+  backface-visibility:hidden;          /* 90°를 넘어가면 자연스레 사라집니다 */
   will-change:transform;
-  background:var(--paper);
-  /* 준비하신 봉투 이미지가 있으면 아래 한 줄을 살리고 .env-panels 블록을 지우세요 */
-  /* background:var(--paper) url('assets/cover.jpg') center/cover no-repeat; */
-  box-shadow:0 calc(var(--p,0) * 40px) calc(var(--p,0) * 54px) rgba(20,30,26,calc(var(--p,0) * .3));
+  background:var(--card) url('assets/cover.jpg') center bottom / 100% auto no-repeat;
+  box-shadow:0 calc(var(--p,0) * 34px) calc(var(--p,0) * 48px) rgba(20,30,26,calc(var(--p,0) * .28));
 }
+/* 가로가 넉넉한 화면에서는 표지를 꽉 채웁니다 */
+@media (min-aspect-ratio:5/4){ .cover{background-size:cover;} }
 
-/* 편지봉투 뒷면 — 좌·우·아래 접힘면과 위 덮개가 가운데에서 만납니다 */
-.env-panels span{position:absolute;inset:0;display:block;}
-.env-l{background:linear-gradient(100deg,var(--paper-fold),var(--paper));
-       clip-path:polygon(0 0,50% 50%,0 100%);}
-.env-r{background:linear-gradient(260deg,var(--paper-fold),var(--paper));
-       clip-path:polygon(100% 0,50% 50%,100% 100%);}
-.env-b{background:linear-gradient(0deg,var(--paper-fold),var(--paper));
-       clip-path:polygon(0 100%,50% 50%,100% 100%);}
-.env-f{background:linear-gradient(180deg,var(--paper-flap),var(--paper-fold));
-       clip-path:polygon(0 0,100% 0,50% 50%);
-       filter:drop-shadow(0 2px 3px rgba(28,38,34,.16));}
-/* 접힘선 */
-.env-crease{
-  position:absolute;inset:0;pointer-events:none;
-  background:
-    linear-gradient(to bottom right,transparent calc(50% - .5px),rgba(28,38,34,.10) 50%,transparent calc(50% + .5px)),
-    linear-gradient(to bottom left, transparent calc(50% - .5px),rgba(28,38,34,.10) 50%,transparent calc(50% + .5px));
-}
-/* 종이결 */
+/* 젖혀질수록 경첩 쪽에 그늘이 집니다 */
 .cover::after{
   content:'';position:absolute;inset:0;pointer-events:none;
-  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 1px,transparent 1px 3px);
-  mix-blend-mode:overlay;
+  background:linear-gradient(180deg,rgba(22,30,26,.5),rgba(22,30,26,0) 58%);
+  opacity:calc(var(--p,0) * .9);
 }
 
-/* 봉함인 — 덮개 끝, 화면 정중앙에서 반으로 갈라집니다 */
+/* 봉함인 — 카드 정중앙에서 반으로 갈라집니다 */
 .seal{
   position:absolute;left:50%;top:50%;
   width:76px;height:76px;margin:-38px 0 0 -38px;
@@ -129,9 +116,9 @@ body{
 .seal-half.l{clip-path:inset(0 50% 0 0);transform:translateX(calc(var(--p,0) * -72px)) rotate(calc(var(--p,0) * -18deg));}
 .seal-half.r{clip-path:inset(0 0 0 50%);transform:translateX(calc(var(--p,0) *  72px)) rotate(calc(var(--p,0) *  18deg));}
 
-/* 봉투 앞면에 손으로 쓴 듯한 문구 */
+/* 표지 문구 — 꽃 장식 위쪽 여백에 놓입니다 */
 .cover-inner{
-  position:absolute;left:0;right:0;top:72%;
+  position:absolute;left:0;right:0;top:24%;
   text-align:center;color:var(--ink-soft);
 }
 .cover-inner .kicker{
@@ -144,7 +131,7 @@ body{
 }
 
 .hint{
-  position:absolute;left:0;right:0;bottom:30px;
+  position:absolute;left:0;right:0;bottom:max(30px,env(safe-area-inset-bottom));
   text-align:center;color:var(--ink-soft);
   font-size:.66rem;letter-spacing:.34em;text-indent:.34em;
   opacity:calc(1 - var(--p,0) * 4);
@@ -291,6 +278,7 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
 @media (prefers-reduced-motion:reduce){
   .reveal{transition-duration:.01ms;}
   .cover{transform:none;opacity:calc(1 - var(--p,0) * 1.6);}
+  .cover::after{opacity:0;}
   .hint i{animation:none;}
   .acc-body{animation:none;}
 }
@@ -312,27 +300,20 @@ footer .foot-album{display:inline-block;margin-top:20px;font-size:.78rem;color:v
       <div class="rule"></div>
     </div>
 
-    <div class="cover">
-      <!-- 실제 봉투 이미지로 교체할 때는 이 .env-panels 블록만 지우세요 -->
-      <div class="env-panels">
-        <span class="env-l"></span>
-        <span class="env-r"></span>
-        <span class="env-b"></span>
-        <span class="env-f"></span>
-        <span class="env-crease"></span>
-      </div>
+    <div class="cover-wrap">
+      <div class="cover">
+        <div class="seal">
+          <div class="seal-half l"><div class="disc">囍</div></div>
+          <div class="seal-half r"><div class="disc">囍</div></div>
+        </div>
 
-      <div class="seal">
-        <div class="seal-half l"><div class="disc">囍</div></div>
-        <div class="seal-half r"><div class="disc">囍</div></div>
-      </div>
+        <div class="cover-inner">
+          <p class="kicker">WE ARE GETTING MARRIED</p>
+          <h1>청첩장</h1>
+        </div>
 
-      <div class="cover-inner">
-        <p class="kicker">WE ARE GETTING MARRIED</p>
-        <h1>청첩장</h1>
+        <p class="hint">스크롤하여 열어보세요<i></i></p>
       </div>
-
-      <p class="hint">스크롤하여 열어보세요<i></i></p>
     </div>
 
   </div>
